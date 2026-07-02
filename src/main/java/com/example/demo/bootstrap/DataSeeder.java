@@ -36,6 +36,34 @@ public class DataSeeder implements CommandLineRunner {
         } catch (RuntimeException e) {
             System.out.println("Admin user already exists or error: " + e.getMessage());
         }
+
+        // Manager Kullanıcısını Oluştur
+        try {
+            User manager = User.builder()
+                    .firstName("Manager")
+                    .lastName("User")
+                    .email("manager@staj.com")
+                    .password("manager123")
+                    .build();
+            userService.createUser(manager, "MANAGER");
+            System.out.println("Manager user created successfully.");
+        } catch (RuntimeException e) {
+            System.out.println("Manager user already exists or error: " + e.getMessage());
+        }
+
+        // Employee Kullanıcısını Oluştur
+        try {
+            User employee = User.builder()
+                    .firstName("Employee")
+                    .lastName("User")
+                    .email("employee@staj.com")
+                    .password("employee123")
+                    .build();
+            userService.createUser(employee, "EMPLOYEE");
+            System.out.println("Employee user created successfully.");
+        } catch (RuntimeException e) {
+            System.out.println("Employee user already exists or error: " + e.getMessage());
+        }
     }
 
     private void createRoleIfNotFound(String name) {

@@ -1,0 +1,10 @@
+services:
+  postgres-db:
+    image: postgres:15
+    container_name: dms_postgres
+    environment:
+      POSTGRES_USER: staj_user
+      POSTGRES_PASSWORD: staj_password
+      POSTGRES_DB: staj_db
+    ports:
+      - "5432:5432"

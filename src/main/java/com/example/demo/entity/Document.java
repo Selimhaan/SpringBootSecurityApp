@@ -10,7 +10,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Document {
+public class Document extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

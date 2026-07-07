@@ -8,3 +8,24 @@ services:
       POSTGRES_DB: staj_db
     ports:
       - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    container_name: dms_redis
+    ports:
+      - "6379:6379"
+
+  app:
+    build: .
+    container_name: dms_app
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/staj_db
+      - SPRING_DATASOURCE_USERNAME=staj_user
+      - SPRING_DATASOURCE_PASSWORD=staj_password
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
+    depends_on:
+      - postgres-db
+      - redis

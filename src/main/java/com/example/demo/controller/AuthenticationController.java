@@ -2,6 +2,8 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.AuthRequest;
 import com.example.demo.dto.AuthResponse;
+import com.example.demo.dto.TokenRefreshRequest;
+import com.example.demo.dto.TokenRefreshResponse;
 import com.example.demo.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,5 +22,10 @@ public class AuthenticationController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> authenticate(@RequestBody AuthRequest request) {
         return ResponseEntity.ok(authenticationService.authenticate(request));
+    }
+    
+    @PostMapping("/refresh")
+    public ResponseEntity<TokenRefreshResponse> refreshtoken(@RequestBody TokenRefreshRequest request) {
+        return ResponseEntity.ok(authenticationService.refreshToken(request));
     }
 }

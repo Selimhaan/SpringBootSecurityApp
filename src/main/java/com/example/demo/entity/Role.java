@@ -3,6 +3,8 @@ package com.example.demo.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.io.Serializable;
+
 @Entity
 @Table(name = "roles")
 // @Getter ve @Setter: Java'daki klasik getName(), setName() gibi metotları otomatik yazar.
@@ -18,7 +20,7 @@ import lombok.*;
 // ve esnek nesneler oluşturmamızı sağlar. (Kodda UserController içinde
 // bunu kullandık).
 @Builder
-public class Role {
+public class Role extends Auditable implements Serializable {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

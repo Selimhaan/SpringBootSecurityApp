@@ -6,6 +6,8 @@ import lombok.*;
 import java.util.HashSet;
 import java.util.Set;
 
+import java.io.Serializable;
+
 @Entity
 @Table(name = "users")
 @Getter
@@ -13,7 +15,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class User {
+public class User extends Auditable implements Serializable {
 
     // lon id yerine UUID kullanımıda tercih edilebilirdi,
     // UUID'ler güvenlik açısından çok daha efektiflerdir.

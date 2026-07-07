@@ -4,6 +4,11 @@ import com.example.demo.dto.AuthRequest;
 import com.example.demo.dto.AuthResponse;
 import com.example.demo.security.CustomUserDetailsService;
 import com.example.demo.security.JwtService;
+import com.example.demo.entity.User;
+import com.example.demo.repository.UserRepository;
+import com.example.demo.entity.RefreshToken;
+import com.example.demo.dto.TokenRefreshRequest;
+import com.example.demo.dto.TokenRefreshResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,6 +22,8 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final CustomUserDetailsService userDetailsService;
     private final JwtService jwtService;
+    private final RefreshTokenService refreshTokenService;
+    private final UserRepository userRepository;
 
     public AuthResponse authenticate(AuthRequest request) {
         authenticationManager.authenticate(
@@ -29,9 +36,31 @@ public class AuthenticationService {
         UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
         String jwtToken = jwtService.generateToken(userDetails);
         
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+                
+        // Eğer varsa eskisini silip yeni üretmek iyi bir strateji olabilir.
+        refreshTokenService.deleteByUserId(user.getId());
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId());
+        
         return AuthResponse.builder()
                 .token(jwtToken)
+                .refreshToken(refreshToken.getToken())
                 .build();
+    }
+    
+    public TokenRefreshResponse refreshToken(TokenRefreshRequest request) {
+        String requestRefreshToken = request.getRefreshToken();
+
+        return refreshTokenService.findByToken(requestRefreshToken)
+                .map(refreshTokenService::verifyExpiration)
+                .map(RefreshToken::getUser)
+                .map(user -> {
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
+                    String token = jwtService.generateToken(userDetails);
+                    return new TokenRefreshResponse(token, requestRefreshToken);
+                })
+                .orElseThrow(() -> new RuntimeException("Refresh token is not in database!"));
     }
 }
 

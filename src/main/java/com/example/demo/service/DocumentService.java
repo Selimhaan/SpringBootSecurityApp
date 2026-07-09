@@ -35,15 +35,15 @@ public class DocumentService {
     }
 
     public List<DocumentResponseDto> getDocuments(User user) {
-        List<Document> documents;
+        List<Document> documents = documentRepository.findByOwner(user);
 
-        String role = user.getRole().getName();
-        if (role.equals("MANAGER") || role.equals("ADMIN")) {
-            documents = documentRepository.findAll();
-        } else {
-            // ROLE_EMPLOYEE or others
-            documents = documentRepository.findByOwner(user);
-        }
+        return documents.stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<DocumentResponseDto> getOtherDocuments(User user) {
+        List<Document> documents = documentRepository.findByOwnerNot(user);
 
         return documents.stream()
                 .map(this::mapToDto)
@@ -78,10 +78,17 @@ public class DocumentService {
     private void checkOwnershipOrManager(Document document, User user, String action) {
         String role = user.getRole().getName();
         boolean isOwner = document.getOwner().getId().equals(user.getId());
-        boolean isManagerOrAdmin = role.equals("MANAGER") || role.equals("ADMIN");
+        boolean isAdmin = role.equals("ADMIN");
+        boolean isManager = role.equals("MANAGER");
 
-        if (!isOwner && !isManagerOrAdmin) {
-            throw new RuntimeException("You do not have permission to " + action + " this document");
+        if (action.equals("delete")) {
+            if (!isOwner && !isAdmin) {
+                throw new RuntimeException("You do not have permission to delete this document");
+            }
+        } else if (action.equals("download")) {
+            if (!isOwner && !isAdmin && !isManager) {
+                throw new RuntimeException("You do not have permission to download this document");
+            }
         }
     }
 

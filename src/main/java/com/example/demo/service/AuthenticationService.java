@@ -13,7 +13,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
+import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +38,13 @@ public class AuthenticationService {
         );
         
         UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
-        String jwtToken = jwtService.generateToken(userDetails);
+        
+        Map<String, Object> extraClaims = new HashMap<>();
+        extraClaims.put("roles", userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList()));
+                
+        String jwtToken = jwtService.generateToken(extraClaims, userDetails);
         
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -57,7 +67,13 @@ public class AuthenticationService {
                 .map(RefreshToken::getUser)
                 .map(user -> {
                     UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
-                    String token = jwtService.generateToken(userDetails);
+                    
+                    Map<String, Object> extraClaims = new HashMap<>();
+                    extraClaims.put("roles", userDetails.getAuthorities().stream()
+                            .map(GrantedAuthority::getAuthority)
+                            .collect(Collectors.toList()));
+                            
+                    String token = jwtService.generateToken(extraClaims, userDetails);
                     return new TokenRefreshResponse(token, requestRefreshToken);
                 })
                 .orElseThrow(() -> new RuntimeException("Refresh token is not in database!"));

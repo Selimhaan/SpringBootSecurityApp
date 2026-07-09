@@ -12,6 +12,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 import java.util.List;
 
 @RestController
@@ -32,6 +34,12 @@ public class DocumentController {
     @GetMapping
     public ResponseEntity<List<DocumentResponseDto>> getDocuments(@AuthenticationPrincipal CustomUserDetails userDetails) {
         return ResponseEntity.ok(documentService.getDocuments(userDetails.getUser()));
+    }
+
+    @GetMapping("/others")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<List<DocumentResponseDto>> getOtherDocuments(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        return ResponseEntity.ok(documentService.getOtherDocuments(userDetails.getUser()));
     }
 
     @GetMapping("/{id}/download")
